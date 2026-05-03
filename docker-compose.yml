@@ -1,0 +1,23 @@
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gateway-service:1.0.0
+    container_name: gateway-service
+    env_file:
+      - .env
+    environment:
+      USER_SERVICE_URL: ${USER_SERVICE_URL:http://user-service:8080}
+      # PAYMENT_SERVICE_URL: ${PAYMENT_SERVICE_URL:http://payment-service:8081}
+      # AGENDA_SERVICE_URL: ${AGENDA_SERVICE_URL:http://agenda-service:8082}
+    ports:
+      - "8090:8090"
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+networks:
+  microservices-net:
+    name: microservices-net
+    external: true
