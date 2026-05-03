@@ -21,12 +21,11 @@ spring:
                 allowed-methods: "*"
                 allowed-headers: "*"
                 allow-credentials: true
-
-        routes:
+          routes:
             - id: user-service
               uri: ${USER_SERVICE_URL:http://localhost:8080}
               predicates:
-                - Path=/api/users/**, /auth/**
+                - Path=/api/user/**, /api/roles/**, /auth/**
               filters:
                 - StripPrefix=0
 
