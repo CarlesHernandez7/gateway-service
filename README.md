@@ -44,15 +44,17 @@ docker compose up --build
 
 | Servicio        | Ruta              | Estado     |
 |-----------------|-------------------|------------|
-| user-service    | `/auth/**`, `/api/users/**` | Activo |
+| user-service    | `/auth/**`, `/api/user/**`, `/api/roles/**` | Activo |
 | payment-service | `/api/payments/**` | Pendiente |
 | agenda-service  | `/api/agenda/**`   | Pendiente |
 
 ## Seguridad
 
 - Todas las rutas requieren un JWT válido excepto las definidas como `open-endpoints` (por defecto `/auth/**`).
-- El gateway valida la firma y expiración del token.
-- Se propagan los headers `X-User-Email` y `X-User-Id` a los servicios downstream.
+- El gateway valida la firma y expiración del token y rechaza los refresh tokens como credencial de acceso.
+- Se propagan los headers `X-User-Email` y `X-User-Id` a los servicios downstream. Si el cliente los envía, se descartan: solo pueden venir de un JWT validado.
+- Se propaga `X-Client-Ip` con la IP real del cliente (usada por el rate limiting de `user-service`). Si el gateway está detrás de un reverse proxy, esa IP será la del proxy.
+- CORS solo admite los orígenes de `CORS_ALLOWED_ORIGINS` (separados por comas).
 
 ## Añadir un nuevo servicio
 

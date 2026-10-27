@@ -1,48 +1,36 @@
 package com.chernandez.gatewayservice.service;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.SecretKey;
-import java.util.Date;
-
 @Service
 public class JwtService {
 
-    @Value("${application.security.jwt.secret-key}")
-    private String secretKey;
+    private static final String REFRESH_TOKEN_TYPE = "refresh";
 
-    public String extractUsername(String token) {
-        return extractAllClaims(token).getSubject();
+    private final JwtParser parser;
+
+    public JwtService(@Value("${application.security.jwt.secret-key}") String secretKey) {
+        this.parser = Jwts.parser()
+            .verifyWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey)))
+            .build();
     }
 
-    public String extractUserId(String token) {
-        return extractAllClaims(token).getId();
+    /**
+     * Verifies signature and expiration and returns the claims.
+     *
+     * @throws io.jsonwebtoken.JwtException if the token is malformed, tampered or expired
+     */
+    public Claims extractAllClaims(String token) {
+        return parser.parseSignedClaims(token).getPayload();
     }
 
-    public boolean isTokenValid(String token) {
-        try {
-            Claims claims = extractAllClaims(token);
-            return !claims.getExpiration().before(new Date());
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-            .verifyWith(getSignInKey())
-            .build()
-            .parseSignedClaims(token)
-            .getPayload();
-    }
-
-    private SecretKey getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
+    public boolean isRefreshToken(Claims claims) {
+        return REFRESH_TOKEN_TYPE.equals(claims.get("type", String.class));
     }
 }
