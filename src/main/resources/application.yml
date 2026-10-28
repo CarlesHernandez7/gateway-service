@@ -15,6 +15,7 @@ spring:
           # Without these the gateway waits forever for a stalled service (no response timeout by default)
           httpclient:
             connect-timeout: ${GATEWAY_CONNECT_TIMEOUT_MS:2000}
+            response-timeout: ${GATEWAY_RESPONSE_TIMEOUT:10s}
           globalcors:
             cors-configurations:
               '[/**]':
