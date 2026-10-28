@@ -12,6 +12,9 @@ spring:
     gateway:
       server:
         webflux:
+          # Without these the gateway waits forever for a stalled service (no response timeout by default)
+          httpclient:
+            connect-timeout: ${GATEWAY_CONNECT_TIMEOUT_MS:2000}
           globalcors:
             cors-configurations:
               '[/**]':
@@ -26,8 +29,27 @@ spring:
                 - Path=/api/user/**, /api/roles/**, /auth/**
               filters:
                 - StripPrefix=0
+                # Outer filter: sees the final outcome after the retries and answers 503 through the
+                # fallback when user-service is down, too slow, or the circuit is open
+                - name: CircuitBreaker
+                  args:
+                    name: userService
+                    fallbackUri: forward:/fallback/user-service
+                # Inner filter: only idempotent GETs, and only when the connection itself fails. Never POST/PUT
+                # (a login or registration could run twice), nor HTTP 5xx or timeouts (would multiply the load).
+                - name: Retry
+                  args:
+                    retries: 2
+                    methods: GET
+                    series: []
+                    exceptions: java.io.IOException
+                    backoff:
+                      firstBackoff: 100ms
+                      maxBackoff: 500ms
+                      factor: 2
 
-            # Future services - uncomment when ready
+            # Future services - uncomment when ready (copy the CircuitBreaker and Retry filters of user-service,
+            # with their own name and fallbackUri, and add the matching /fallback/<service> endpoint)
             # - id: payment-service
             #   uri: ${PAYMENT_SERVICE_URL:http://localhost:8081}
             #   predicates:
@@ -44,6 +66,16 @@ spring:
 
 application:
   version: "@project.version@"
+  resilience:
+    circuit-breaker:
+      sliding-window-size: 10        # last calls evaluated
+      minimum-calls: 5               # calls needed before the failure rate is evaluated
+      failure-rate-threshold: 50     # % of failed calls that opens the circuit
+      open-state-duration: 10s       # time open before letting trial calls through
+      half-open-calls: 3             # trial calls allowed while half-open
+      # Hard limit per call. MUST stay above the response-timeout (10s): Resilience4j's own default is 1s,
+      # which would cut any slow-but-healthy response.
+      time-limit: 12s
   security:
     jwt:
       secret-key: ${JWT_SECRET_KEY}

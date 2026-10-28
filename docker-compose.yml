@@ -7,10 +7,13 @@ services:
     container_name: gateway-service
     env_file:
       - .env
+    # Compose also reads .env to interpolate ${...}, and that file points to localhost for local runs
+    # (mvn spring-boot:run). Inside the container localhost is the gateway itself, so these use their own
+    # DOCKER_* variables with the service names of microservices-net as defaults.
     environment:
-      USER_SERVICE_URL: ${USER_SERVICE_URL:http://user-service:8080}
-      # PAYMENT_SERVICE_URL: ${PAYMENT_SERVICE_URL:http://payment-service:8081}
-      # AGENDA_SERVICE_URL: ${AGENDA_SERVICE_URL:http://agenda-service:8082}
+      USER_SERVICE_URL: ${DOCKER_USER_SERVICE_URL:-http://user-service:8080}
+      # PAYMENT_SERVICE_URL: ${DOCKER_PAYMENT_SERVICE_URL:-http://payment-service:8081}
+      # AGENDA_SERVICE_URL: ${DOCKER_AGENDA_SERVICE_URL:-http://agenda-service:8082}
     ports:
       - "8090:8090"
     networks:
