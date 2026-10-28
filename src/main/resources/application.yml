@@ -49,6 +49,27 @@ spring:
                       maxBackoff: 500ms
                       factor: 2
 
+            - id: budget-service
+              uri: ${BUDGET_SERVICE_URL:http://localhost:8083}
+              predicates:
+                - Path=/api/projects/**, /api/budgets/**
+              filters:
+                - StripPrefix=0
+                - name: CircuitBreaker
+                  args:
+                    name: budgetService
+                    fallbackUri: forward:/fallback/budget-service
+                - name: Retry
+                  args:
+                    retries: 2
+                    methods: GET
+                    series: []
+                    exceptions: java.io.IOException
+                    backoff:
+                      firstBackoff: 100ms
+                      maxBackoff: 500ms
+                      factor: 2
+
             # Future services - uncomment when ready (copy the CircuitBreaker and Retry filters of user-service,
             # with their own name and fallbackUri, and add the matching /fallback/<service> endpoint)
             # - id: payment-service

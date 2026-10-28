@@ -6,6 +6,7 @@ API Gateway para la red de microservicios. Actúa como punto de entrada único, 
 
 ```
 Client → Gateway (8090) → user-service (8080)
+                        → budget-service (8083)
                         → payment-service (8081)  [futuro]
                         → agenda-service (8082)   [futuro]
 ```
@@ -47,6 +48,7 @@ Dentro de Docker el gateway llega a `user-service` por su nombre en la red `micr
 | Servicio        | Ruta              | Estado     |
 |-----------------|-------------------|------------|
 | user-service    | `/auth/**`, `/api/user/**`, `/api/roles/**` | Activo |
+| budget-service  | `/api/projects/**`, `/api/budgets/**` | Activo (`BUDGET_SERVICE_URL`, en Docker `http://budget-service:8083`) |
 | payment-service | `/api/payments/**` | Pendiente |
 | agenda-service  | `/api/agenda/**`   | Pendiente |
 

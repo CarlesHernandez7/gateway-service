@@ -12,6 +12,7 @@ services:
     # DOCKER_* variables with the service names of microservices-net as defaults.
     environment:
       USER_SERVICE_URL: ${DOCKER_USER_SERVICE_URL:-http://user-service:8080}
+      BUDGET_SERVICE_URL: ${DOCKER_BUDGET_SERVICE_URL:-http://budget-service:8083}
       # PAYMENT_SERVICE_URL: ${DOCKER_PAYMENT_SERVICE_URL:-http://payment-service:8081}
       # AGENDA_SERVICE_URL: ${DOCKER_AGENDA_SERVICE_URL:-http://agenda-service:8082}
     ports:
