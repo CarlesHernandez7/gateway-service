@@ -28,6 +28,11 @@ public class FallbackController {
         return unavailable("budget-service is temporarily unavailable. Please try again in a few moments.");
     }
 
+    @RequestMapping("/fallback/organization-service")
+    public Mono<ResponseEntity<Map<String, Object>>> organizationServiceFallback() {
+        return unavailable("organization-service is temporarily unavailable. Please try again in a few moments.");
+    }
+
     private Mono<ResponseEntity<Map<String, Object>>> unavailable(String message) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("message", message);

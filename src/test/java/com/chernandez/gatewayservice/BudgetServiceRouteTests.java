@@ -59,7 +59,7 @@ class BudgetServiceRouteTests {
 
     @Test
     void requestsWithoutTokenNeverReachBudgetService() {
-        client.get().uri("/api/projects").exchange()
+        client.get().uri("/api/budgets?projectId=1").exchange()
             .expectStatus().isUnauthorized();
         client.get().uri("/api/budgets/1").exchange()
             .expectStatus().isUnauthorized();
@@ -68,8 +68,8 @@ class BudgetServiceRouteTests {
     }
 
     @Test
-    void projectsAndBudgetsAreRoutedToBudgetService() {
-        client.get().uri("/api/projects").header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken()).exchange()
+    void budgetsAreRoutedToBudgetService() {
+        client.get().uri("/api/budgets?projectId=1").header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken()).exchange()
             .expectStatus().isOk()
             .expectBody(String.class).isEqualTo("ok");
         client.get().uri("/api/budgets/1").header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken()).exchange()
@@ -82,7 +82,7 @@ class BudgetServiceRouteTests {
     void failingConnectionsAnswerWithTheBudgetServiceFallback() {
         BACKEND.use(StubBackend.dropFirst(Integer.MAX_VALUE));
 
-        client.get().uri("/api/projects").header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken()).exchange()
+        client.get().uri("/api/budgets?projectId=1").header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken()).exchange()
             .expectStatus().isEqualTo(503)
             .expectBody()
             .jsonPath("$.message").isEqualTo("budget-service is temporarily unavailable. Please try again in a few moments.");

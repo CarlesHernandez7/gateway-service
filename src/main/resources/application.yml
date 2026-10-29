@@ -52,13 +52,34 @@ spring:
             - id: budget-service
               uri: ${BUDGET_SERVICE_URL:http://localhost:8083}
               predicates:
-                - Path=/api/projects/**, /api/budgets/**
+                - Path=/api/budgets/**
               filters:
                 - StripPrefix=0
                 - name: CircuitBreaker
                   args:
                     name: budgetService
                     fallbackUri: forward:/fallback/budget-service
+                - name: Retry
+                  args:
+                    retries: 2
+                    methods: GET
+                    series: []
+                    exceptions: java.io.IOException
+                    backoff:
+                      firstBackoff: 100ms
+                      maxBackoff: 500ms
+                      factor: 2
+
+            - id: organization-service
+              uri: ${ORGANIZATION_SERVICE_URL:http://localhost:8086}
+              predicates:
+                - Path=/api/company-groups/**, /api/companies/**, /api/projects/**
+              filters:
+                - StripPrefix=0
+                - name: CircuitBreaker
+                  args:
+                    name: organizationService
+                    fallbackUri: forward:/fallback/organization-service
                 - name: Retry
                   args:
                     retries: 2
