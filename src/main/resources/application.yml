@@ -52,7 +52,7 @@ spring:
             - id: budget-service
               uri: ${BUDGET_SERVICE_URL:http://localhost:8083}
               predicates:
-                - Path=/api/budgets/**
+                - Path=/api/budgets/**, /api/price-databases/**
               filters:
                 - StripPrefix=0
                 - name: CircuitBreaker
